@@ -72,6 +72,16 @@ jobs:
           fetch-tags: true
           sparse-checkout: scripts/sandbox/pick-release-tags.sh
           sparse-checkout-cone-mode: false
+      # Forks do not automatically carry the canonical repo's release tags, but
+      # this matrix is explicitly about updating from NousResearch releases.
+      # Fetch those tags before the picker runs so scheduled fork workflows do
+      # not fail with an empty matrix.
+      - name: Fetch canonical release tags
+        run: |
+          set -euo pipefail
+          git fetch -q --force --tags \
+            https://github.com/NousResearch/hermes-agent.git \
+            'refs/tags/v*:refs/tags/v*'
       - id: pick
         run: |
           set -euo pipefail
