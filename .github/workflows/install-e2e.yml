@@ -13,15 +13,14 @@ name: Install & Update E2E
 # ships, and would pin an "oldest" that nobody still runs.
 #
 # Triggers:
-#   * every 12 hours, so upstream drift (a new uv, a Node bump, a PyPI change)
-#     surfaces on a schedule rather than in someone's review cycle;
+#   * scheduled runs are disabled for this personal fork;
 #   * when a release tag is created -- the moment the set of versions users can
 #     update FROM changes, and the moment a broken updater would strand them;
 #   * manually, where you can pick the route and how many releases to sample.
 #
 # Deliberately NOT on pull_request: a leg takes ~11 minutes of real toolchain
 # installation, and the matrix multiplies that. Updating is release-shaped work,
-# so it is gated on releases and the clock instead.
+# so it is gated on releases or manual dispatch instead.
 
 on:
   workflow_dispatch:
@@ -37,9 +36,7 @@ on:
         required: false
         type: string
         default: '5'
-  schedule:
-    # Every 12 hours, off the hour to avoid the top-of-hour runner crunch.
-    - cron: '20 7,19 * * *'
+
   push:
     tags:
       # Release tags only: the repo also carries backup/* and one-off tags.
@@ -74,7 +71,7 @@ jobs:
           sparse-checkout-cone-mode: false
       # Forks do not automatically carry the canonical repo's release tags, but
       # this matrix is explicitly about updating from NousResearch releases.
-      # Fetch those tags before the picker runs so scheduled fork workflows do
+      # Fetch those tags before the picker runs so fork workflows do
       # not fail with an empty matrix.
       - name: Fetch canonical release tags
         run: |
